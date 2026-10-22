@@ -358,7 +358,7 @@ describe('Milestone 1: Web App Manifest & Icons Verification', () => {
     expect(json.orientation).toBe('portrait');
     expect(json.theme_color).toBe('#0a0a16');
     expect(json.background_color).toBe('#0a0a16');
-    expect(json.start_url).toBe('./index.html');
+    expect(json.start_url).toBe('/mobile-arcade-game/');
   });
 
   it('manifest declares standard, maskable, and SVG icons', () => {

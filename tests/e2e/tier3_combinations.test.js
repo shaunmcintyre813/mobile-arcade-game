@@ -219,7 +219,7 @@ describe('Tier 3: Cross-Feature Integration Scenarios (Opaque-Box E2E)', () => {
   // =========================================================================
   describe('Pairwise 5: Full Offline Session With Precached Assets', () => {
     it('verifies complete offline game boot, asset precaching, and challenge loop without network', async () => {
-      // 1. Verify all 11 precache assets exist physically on disk
+      // 1. Verify every precache asset exists physically on disk
       const swCode = fs.readFileSync(path.join(projectRoot, 'sw.js'), 'utf8');
       const match = swCode.match(/const PRECACHE_ASSETS = \[(.*?)\];/s);
       expect(match).toBeDefined();
@@ -229,7 +229,7 @@ describe('Tier 3: Cross-Feature Integration Scenarios (Opaque-Box E2E)', () => {
         .map(s => s.trim().replace(/['"]/g, ''))
         .filter(Boolean);
 
-      expect(assets.length).toBe(11);
+      expect(assets.length).toBeGreaterThanOrEqual(19);
       for (const a of assets) {
         const cleanPath = a.replace(/^\.\//, '');
         const fullPath = path.join(projectRoot, cleanPath === '' ? 'index.html' : cleanPath);

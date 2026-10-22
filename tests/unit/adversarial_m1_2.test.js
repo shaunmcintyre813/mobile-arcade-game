@@ -242,7 +242,7 @@ describe('Adversarial PWA Validation: manifest.webmanifest', () => {
     expect(manifest.short_name).toBe('AntiGravity');
     expect(manifest.short_name.length).toBeLessThanOrEqual(12);
 
-    expect(manifest.start_url).toBe('./index.html');
+    expect(manifest.start_url).toBe('/mobile-arcade-game/');
     expect(manifest.display).toBe('standalone');
     expect(manifest.orientation).toBe('portrait');
 
@@ -251,8 +251,8 @@ describe('Adversarial PWA Validation: manifest.webmanifest', () => {
     expect(manifest.background_color).toMatch(/^#[0-9a-fA-F]{6}$/);
 
     // Scope and id
-    expect(manifest.scope).toBe('./');
-    expect(manifest.id).toBe('./?source=pwa');
+    expect(manifest.scope).toBe('/mobile-arcade-game/');
+    expect(manifest.id).toBe('/mobile-arcade-game/');
 
     // Direction and language
     expect(manifest.lang).toBe('en');

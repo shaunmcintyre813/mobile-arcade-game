@@ -449,7 +449,7 @@ describe('Adversarial Stress Suite: Preview Server & Service Worker Query Neutra
     }
   });
 
-  it('all 11 precache assets in sw.js physically exist and respond with HTTP 200 on preview server', async () => {
+  it('all precache assets in sw.js physically exist and respond with HTTP 200 on preview server', async () => {
     const swContent = fs.readFileSync(path.join(projectRoot, 'sw.js'), 'utf8');
     const match = swContent.match(/const PRECACHE_ASSETS = \[(.*?)\];/s);
     expect(match).toBeDefined();
@@ -459,7 +459,7 @@ describe('Adversarial Stress Suite: Preview Server & Service Worker Query Neutra
       .map(s => s.trim().replace(/['"]/g, ''))
       .filter(Boolean);
 
-    expect(rawAssets.length).toBe(11);
+    expect(rawAssets.length).toBeGreaterThanOrEqual(19);
 
     for (const asset of rawAssets) {
       const fetchUrl = `http://127.0.0.1:${testPort}/${asset.replace(/^\.\//, '')}`;

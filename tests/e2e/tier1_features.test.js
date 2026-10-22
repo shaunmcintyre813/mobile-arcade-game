@@ -334,7 +334,7 @@ describe('Tier 1: Feature Coverage (Opaque-Box E2E)', () => {
     it('4.1 manifest.webmanifest contains required PWA fields and values', () => {
       expect(manifest.name).toBe('AntiGravity: Neon Pulse');
       expect(manifest.short_name).toBe('AntiGravity');
-      expect(manifest.start_url).toBe('./index.html');
+      expect(manifest.start_url).toBe('/mobile-arcade-game/');
       expect(manifest.display).toBe('standalone');
       expect(manifest.orientation).toBe('portrait');
       expect(manifest.theme_color).toBe('#0a0a16');
@@ -353,7 +353,7 @@ describe('Tier 1: Feature Coverage (Opaque-Box E2E)', () => {
       const maskable = manifest.icons.find(i => i.purpose && i.purpose.includes('maskable'));
       expect(maskable).toBeDefined();
       expect(maskable.sizes).toBe('512x512');
-      expect(maskable.src).toBe('./icons/icon-maskable-512.png');
+      expect(maskable.src).toBe('icons/icon-maskable-512.png');
     });
 
     it('4.4 Master vector icon icons/icon.svg exists and is valid SVG XML', () => {
@@ -378,9 +378,10 @@ describe('Tier 1: Feature Coverage (Opaque-Box E2E)', () => {
       }
     });
 
-    it('4.6 Manifest uses subpath-neutral relative paths for start_url and scope', () => {
-      expect(manifest.start_url.startsWith('./')).toBe(true);
-      expect(manifest.scope.startsWith('./')).toBe(true);
+    it('4.6 Manifest keeps the installed app within the GitHub Pages project path', () => {
+      expect(manifest.id).toBe('/mobile-arcade-game/');
+      expect(manifest.start_url).toBe('/mobile-arcade-game/');
+      expect(manifest.scope).toBe('/mobile-arcade-game/');
     });
   });
 
