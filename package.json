@@ -1,6 +1,6 @@
 {
   "name": "antigravity-neon-pulse",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "AntiGravity: Neon Pulse - Mobile Arcade PWA optimized for Samsung Galaxy S25 Ultra",
@@ -9,7 +9,8 @@
     "test:unit": "vitest run tests/unit",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "serve": "node preview.js"
+    "serve": "node preview.js",
+    "manifest:generate": "node scripts/generate-release-manifest.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",

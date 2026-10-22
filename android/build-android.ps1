@@ -1,6 +1,8 @@
 param(
     [string] $SdkRoot = "$env:USERPROFILE\AppData\Local\Android\Sdk",
-    [string] $JavaRoot = 'C:\Program Files\Android\Android Studio\jbr'
+    [string] $JavaRoot = 'C:\Program Files\Android\Android Studio\jbr',
+    [string] $Version = '1.1.0',
+    [int] $VersionCode = 2
 )
 
 $ErrorActionPreference = 'Stop'
@@ -37,7 +39,7 @@ $unsigned = Join-Path $build 'unsigned.apk'
 $aligned = Join-Path $build 'aligned.apk'
 $keystore = Join-Path $repo 'release\antigravity-neon-pulse.jks'
 $passwordFile = Join-Path $repo 'release\keystore-pass.txt'
-$output = Join-Path $repo 'downloads\AntiGravity-Neon-Pulse-v1.0.0.apk'
+$output = Join-Path $repo "downloads\AntiGravity-Neon-Pulse-v$Version.apk"
 foreach ($path in @($assets, $sourceAssets, $iconAssets, $res, $classes, $dex, (Split-Path $keystore), (Split-Path $output))) {
     New-Item -ItemType Directory -Force -Path $path | Out-Null
 }
@@ -70,20 +72,10 @@ try {
 & (Join-Path $tools 'zipalign.exe') -f 4 $unsigned $aligned
 Check-Exit 'APK alignment'
 
-if ((Test-Path -LiteralPath $keystore) -xor (Test-Path -LiteralPath $passwordFile)) {
-    throw 'The signing key and password must both be present for future updates.'
+if (!(Test-Path -LiteralPath $keystore) -or !(Test-Path -LiteralPath $passwordFile)) {
+    throw 'The signing key and password must both be present for updates to preserve the signature.'
 }
-if (!(Test-Path -LiteralPath $keystore)) {
-    $passwordBytes = New-Object byte[] 32
-    [System.Security.Cryptography.RandomNumberGenerator]::Fill($passwordBytes)
-    $password = [Convert]::ToBase64String($passwordBytes)
-    Set-Content -LiteralPath $passwordFile -Value $password -Encoding Ascii
-    & (Join-Path $java 'keytool.exe') -genkeypair -keystore $keystore -storetype PKCS12 `
-        -alias antigravity-neon-pulse -keyalg RSA -keysize 3072 -validity 10000 `
-        -dname 'CN=AntiGravity Neon Pulse, OU=Personal, O=Shaun McIntyre, C=US' `
-        -storepass $password -keypass $password -noprompt
-    Check-Exit 'Signing key generation'
-}
+
 $password = (Get-Content -Raw -LiteralPath $passwordFile).Trim()
 & (Join-Path $tools 'apksigner.bat') sign --ks $keystore --ks-type PKCS12 `
     --ks-key-alias antigravity-neon-pulse --ks-pass "file:$passwordFile" `
@@ -93,6 +85,6 @@ Check-Exit 'APK signing'
 Check-Exit 'APK signature verification'
 
 $sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $output).Hash.ToLowerInvariant()
-Set-Content -LiteralPath "$output.sha256" -Value "$sha256  AntiGravity-Neon-Pulse-v1.0.0.apk" -Encoding Ascii
+Set-Content -LiteralPath "$output.sha256" -Value "$sha256  AntiGravity-Neon-Pulse-v$Version.apk" -Encoding Ascii
 & (Join-Path $tools 'aapt.exe') dump badging $output | Select-Object -First 5
 Write-Output "Built $output"

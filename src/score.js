@@ -51,28 +51,51 @@ export class StorageController {
    * @returns {number}
    */
   getHighScore() {
+    let nativeScore = 0;
+    if (typeof window !== 'undefined' && window.AntiGravityAndroid &&
+        typeof window.AntiGravityAndroid.getSavedHighScore === 'function') {
+      try {
+        const val = window.AntiGravityAndroid.getSavedHighScore();
+        if (Number.isFinite(val) && val > 0) {
+          nativeScore = Math.floor(val);
+        }
+      } catch (_) {}
+    }
+
     const storage = this._getStorage();
     if (!storage) {
+      this.inMemoryScore = Math.max(this.inMemoryScore, nativeScore);
       return this.inMemoryScore;
     }
 
     try {
       const raw = storage.getItem(STORAGE_KEY);
       if (raw === null || raw === undefined || raw === '') {
+        if (nativeScore > 0) {
+          try { storage.setItem(STORAGE_KEY, String(nativeScore)); } catch (_) {}
+          this.inMemoryScore = Math.max(this.inMemoryScore, nativeScore);
+        }
         return this.inMemoryScore;
       }
 
       // Handle raw numeric or stringified integers
       const parsed = parseInt(String(raw).trim(), 10);
       if (Number.isFinite(parsed) && parsed >= 0) {
-        this.inMemoryScore = Math.max(this.inMemoryScore, parsed);
+        const best = Math.max(parsed, nativeScore);
+        this.inMemoryScore = Math.max(this.inMemoryScore, best);
+        if (best > parsed) {
+          try { storage.setItem(STORAGE_KEY, String(best)); } catch (_) {}
+        }
         return this.inMemoryScore;
       }
 
-      // If invalid / corrupted string (e.g. "NaN", "{bad: json}", "-120"), fallback safely
+      if (nativeScore > 0) {
+        try { storage.setItem(STORAGE_KEY, String(nativeScore)); } catch (_) {}
+        this.inMemoryScore = Math.max(this.inMemoryScore, nativeScore);
+      }
       return this.inMemoryScore;
     } catch (_) {
-      // Storage access blocked or threw an error
+      this.inMemoryScore = Math.max(this.inMemoryScore, nativeScore);
       return this.inMemoryScore;
     }
   }

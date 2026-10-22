@@ -189,6 +189,10 @@ export class GameEngine {
    */
   startPlaying() {
     this.state = STATE_PLAYING;
+    if (typeof window !== 'undefined' && window.AntiGravityAndroid &&
+        typeof window.AntiGravityAndroid.setRoundState === 'function') {
+      try { window.AntiGravityAndroid.setRoundState(true); } catch (_) {}
+    }
     if (this.ui) {
       if (typeof this.ui.hideStartScreen === 'function') {
         this.ui.hideStartScreen();
@@ -368,6 +372,14 @@ export class GameEngine {
    */
   triggerGameOver(lethalObstacle) {
     this.state = STATE_GAME_OVER;
+    if (typeof window !== 'undefined' && window.AntiGravityAndroid) {
+      if (typeof window.AntiGravityAndroid.setRoundState === 'function') {
+        try { window.AntiGravityAndroid.setRoundState(false); } catch (_) {}
+      }
+      if (typeof window.AntiGravityAndroid.reportScore === 'function') {
+        try { window.AntiGravityAndroid.reportScore(this.scoreManager.score); } catch (_) {}
+      }
+    }
 
     // Visual shockwave explosion and audio crash
     this.particles.spawnExplosion(this.player.x, this.player.y);
