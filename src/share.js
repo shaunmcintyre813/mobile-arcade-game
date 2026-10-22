@@ -114,7 +114,9 @@ export class ShareController {
     if (typeof window !== 'undefined' && window.location) {
       const origin = window.location.origin;
       const pathname = window.location.pathname || '/';
-      if (origin && origin !== 'null' && window.location.protocol !== 'file:') {
+      if (window.location.hostname === 'appassets.androidplatform.net') {
+        baseUrl = 'https://shaunmcintyre813.github.io/mobile-arcade-game/';
+      } else if (origin && origin !== 'null' && window.location.protocol !== 'file:') {
         baseUrl = `${origin}${pathname}`;
       } else {
         baseUrl = `${pathname}`;
@@ -157,6 +159,14 @@ export class ShareController {
       text: 'Can you beat my score of ' + numericScore + ' in AntiGravity?',
       url
     };
+
+    // The bundled Android edition has a local origin that other players cannot open.
+    // Its native share sheet receives the public challenge link above.
+    if (typeof window !== 'undefined' && window.AntiGravityAndroid &&
+        typeof window.AntiGravityAndroid.share === 'function') {
+      window.AntiGravityAndroid.share(shareData.text, url);
+      return { success: true, method: 'android-share', cancelled: false };
+    }
 
     // 1. Tier 1: Modern Web Share API
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
@@ -201,7 +211,7 @@ export class ShareController {
     }
 
     // 4. Render animated floating toast notification
-    this.showToast('📋 Challenge link copied to clipboard!');
+    this.showToast(copied ? '📋 Challenge link copied to clipboard!' : 'Could not copy challenge link');
 
     return {
       success: copied,

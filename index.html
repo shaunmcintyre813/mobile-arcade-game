@@ -126,7 +126,9 @@
 
   <!-- Service Worker Registration -->
   <script type="module">
-    if ('serviceWorker' in navigator && (window.isSecureContext || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    if (window.location.hostname !== 'appassets.androidplatform.net' &&
+        'serviceWorker' in navigator &&
+        (window.isSecureContext || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
       window.addEventListener('load', async () => {
         try {
           const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
