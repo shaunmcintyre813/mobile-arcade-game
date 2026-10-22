@@ -4,7 +4,7 @@
                  Immediate Activation & 100% Offline Resilience
    ========================================================================== */
 
-const CACHE_VERSION = 'v1.0.1';
+const CACHE_VERSION = 'v1.0.2';
 const CACHE_NAME = `antigravity-neon-pulse-${CACHE_VERSION}`;
 
 // Pre-cached core application shell assets
@@ -67,6 +67,17 @@ self.addEventListener('fetch', (event) => {
 
   // Strategy A: Navigation requests (HTML document launches, challenge links with query params)
   if (request.mode === 'navigate') {
+    const requestedUrl = new URL(request.url);
+    const scopeUrl = new URL(self.registration.scope);
+    const indexPath = new URL('./index.html', scopeUrl).pathname;
+
+    // Only an app-shell navigation may replace the cached HTML. A direct
+    // navigation to manifest.webmanifest or another asset must pass through.
+    if (requestedUrl.origin !== scopeUrl.origin ||
+        (requestedUrl.pathname !== scopeUrl.pathname && requestedUrl.pathname !== indexPath)) {
+      return;
+    }
+
     event.respondWith(
       caches.match('./index.html', { ignoreSearch: true }).then((cachedIndex) => {
         const networkFetch = fetch(request)
