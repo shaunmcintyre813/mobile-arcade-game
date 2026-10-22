@@ -4,7 +4,7 @@
                  Immediate Activation & 100% Offline Resilience
    ========================================================================== */
 
-const CACHE_VERSION = 'v1.0.0';
+const CACHE_VERSION = 'v1.0.1';
 const CACHE_NAME = `antigravity-neon-pulse-${CACHE_VERSION}`;
 
 // Pre-cached core application shell assets
@@ -13,6 +13,14 @@ const PRECACHE_ASSETS = [
   './index.html',
   './style.css',
   './manifest.webmanifest',
+  './src/game.js',
+  './src/player.js',
+  './src/rails.js',
+  './src/obstacles.js',
+  './src/particles.js',
+  './src/score.js',
+  './src/share.js',
+  './src/ui.js',
   './src/display.js',
   './src/touch.js',
   './src/audio.js',
@@ -58,7 +66,6 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Strategy A: Navigation requests (HTML document launches, challenge links with query params)
-  // Uses Stale-While-Revalidate matching cached index.html with ignoreSearch: true
   if (request.mode === 'navigate') {
     event.respondWith(
       caches.match('./index.html', { ignoreSearch: true }).then((cachedIndex) => {
@@ -74,7 +81,6 @@ self.addEventListener('fetch', (event) => {
           })
           .catch(() => cachedIndex);
 
-        // Return cached index immediately for instantaneous offline launch, falling back to network
         return cachedIndex || networkFetch;
       })
     );
@@ -102,7 +108,6 @@ self.addEventListener('fetch', (event) => {
           return networkResponse;
         })
         .catch(() => {
-          // Offline fallback for subresources if both cache and network fail
           if (request.destination === 'image') {
             return caches.match('./icons/icon.svg');
           }
