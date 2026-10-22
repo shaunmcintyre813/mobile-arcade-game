@@ -1,0 +1,466 @@
+/* ==========================================================================
+   AntiGravity: Neon Pulse - Mobile-First Cyberpunk Style Sheet
+   Target Profile: Samsung Galaxy S25 Ultra (19.5:9 / 20:9, 120Hz LTPO AMOLED)
+   ========================================================================== */
+
+:root {
+  /* Dynamic Safe Area Insets for Edge-to-Edge Displays & Camera Punch-Hole */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* Cyberpunk Palette - AMOLED Deep Black & Vibrant Neon Accents */
+  --color-bg: #050508;
+  --color-panel: rgba(10, 10, 22, 0.85);
+  --color-panel-border: rgba(0, 240, 255, 0.3);
+  --color-cyan: #00f0ff;
+  --color-cyan-glow: rgba(0, 240, 255, 0.45);
+  --color-magenta: #ff0055;
+  --color-magenta-glow: rgba(255, 0, 85, 0.45);
+  --color-gold: #ffe600;
+  --color-gold-glow: rgba(255, 230, 0, 0.5);
+  --color-lime: #00ff77;
+  --color-text-primary: #ffffff;
+  --color-text-muted: #8892b0;
+
+  /* Typography */
+  --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SF Mono", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+}
+
+/* --------------------------------------------------------------------------
+   Document & Viewport Lock: Eradicate Pull-to-Refresh & Rubber-Banding
+   -------------------------------------------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+
+  /* Crucial Mobile Gestural Isolation */
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* --------------------------------------------------------------------------
+   Root Layout & Canvas
+   -------------------------------------------------------------------------- */
+#game-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#game-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  z-index: 1;
+}
+
+#ui-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Allows touch events to pass cleanly to canvas */
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --------------------------------------------------------------------------
+   Challenge Banner
+   -------------------------------------------------------------------------- */
+.hud-banner {
+  pointer-events: auto;
+  align-self: center;
+  margin-top: calc(8px + var(--safe-top));
+  padding: 6px 16px;
+  background: rgba(255, 0, 85, 0.2);
+  border: 1px solid var(--color-magenta);
+  border-radius: 20px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 0 15px var(--color-magenta-glow);
+  animation: bannerPulse 2s infinite ease-in-out;
+}
+
+@keyframes bannerPulse {
+  0%, 100% { opacity: 0.95; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+
+/* --------------------------------------------------------------------------
+   Top HUD Elements
+   -------------------------------------------------------------------------- */
+.hud-panel {
+  pointer-events: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(12px + var(--safe-top)) calc(18px + var(--safe-right)) 10px calc(18px + var(--safe-left));
+  width: 100%;
+}
+
+.hud-score-container, .hud-multiplier-container, .hud-best-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hud-score-container {
+  align-items: flex-start;
+}
+
+.hud-best-container {
+  align-items: flex-end;
+}
+
+.hud-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.hud-value {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+}
+
+.neon-cyan {
+  color: var(--color-cyan);
+  text-shadow: 0 0 10px var(--color-cyan-glow);
+}
+
+.neon-magenta {
+  color: var(--color-magenta);
+  text-shadow: 0 0 10px var(--color-magenta-glow);
+}
+
+.neon-gold {
+  color: var(--color-gold);
+  text-shadow: 0 0 10px var(--color-gold-glow);
+}
+
+/* --------------------------------------------------------------------------
+   Overlay Screens: Start Screen & Game Over Modal
+   -------------------------------------------------------------------------- */
+.overlay-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+  background: rgba(5, 5, 8, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(40px + var(--safe-top)) calc(24px + var(--safe-right)) calc(30px + var(--safe-bottom)) calc(24px + var(--safe-left));
+  transition: opacity 0.25s ease;
+  z-index: 20;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Start Screen Branding */
+.logo-box {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.game-title {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: #fff;
+  text-shadow: 0 0 16px var(--color-cyan-glow), 0 0 32px var(--color-cyan);
+}
+
+.game-subtitle {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--color-magenta);
+  text-shadow: 0 0 12px var(--color-magenta-glow);
+  margin-top: 4px;
+}
+
+/* Instructions Card */
+.instructions-card {
+  width: 100%;
+  max-width: 340px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-panel-border);
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.instruction-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inst-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.inst-text {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #ccd6f6;
+}
+
+.inst-text strong {
+  color: var(--color-cyan);
+}
+
+/* Tap to Start Zone */
+.tap-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.tap-prompt {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: var(--color-gold);
+  text-shadow: 0 0 14px var(--color-gold-glow);
+}
+
+.tap-sub {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  letter-spacing: 1px;
+  margin-top: 6px;
+}
+
+.pulse-anim {
+  animation: tapPulse 1.6s infinite ease-in-out;
+}
+
+@keyframes tapPulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.06); opacity: 1; }
+}
+
+.pwa-install-btn {
+  background: transparent;
+  border: 1px dashed var(--color-cyan);
+  color: var(--color-cyan);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------------------
+   Game Over Modal
+   -------------------------------------------------------------------------- */
+.modal-card {
+  width: 100%;
+  max-width: 340px;
+  margin: auto;
+  background: var(--color-panel);
+  border: 1px solid var(--color-magenta);
+  border-radius: 20px;
+  padding: 26px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 0 35px var(--color-magenta-glow);
+  animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.game-over-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: var(--color-magenta);
+  text-shadow: 0 0 14px var(--color-magenta-glow);
+}
+
+.record-badge {
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-gold);
+  background: rgba(255, 230, 0, 0.15);
+  border: 1px solid var(--color-gold);
+  border-radius: 12px;
+  padding: 4px 12px;
+  letter-spacing: 1px;
+  animation: recordGlow 1s infinite alternate;
+}
+
+@keyframes recordGlow {
+  from { box-shadow: 0 0 5px var(--color-gold-glow); }
+  to { box-shadow: 0 0 15px var(--color-gold-glow); }
+}
+
+.score-summary {
+  width: 100%;
+  margin: 22px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.summary-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--color-text-muted);
+}
+
+.summary-val {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.modal-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-btn {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: none;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: transform 0.1s ease, filter 0.15s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-btn:active {
+  transform: scale(0.97);
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, var(--color-cyan), #0077ff);
+  color: #050508;
+  box-shadow: 0 4px 20px var(--color-cyan-glow);
+}
+
+.share-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-cyan);
+  color: var(--color-cyan);
+}
+
+/* --------------------------------------------------------------------------
+   Floating Animated Toasts
+   -------------------------------------------------------------------------- */
+.toast-shelf {
+  position: fixed;
+  bottom: calc(24px + var(--safe-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.game-toast {
+  pointer-events: auto;
+  background: rgba(10, 10, 24, 0.96);
+  border: 1px solid var(--color-cyan);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 25px var(--color-cyan-glow);
+  white-space: nowrap;
+  animation: toastIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.game-toast.fade-out {
+  opacity: 0;
+  transform: translate(0, 10px);
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}

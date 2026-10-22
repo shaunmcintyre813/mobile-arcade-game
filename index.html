@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>AntiGravity: Neon Pulse</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="Addictive, high-speed mobile arcade anti-gravity runner tailored for high-refresh-rate touchscreens.">
+  <meta name="theme-color" content="#0a0a16">
+  <meta name="color-scheme" content="dark">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AntiGravity">
+  <meta name="application-name" content="AntiGravity">
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- Manifest & Icons -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- Root Game Container -->
+  <div id="game-container">
+    <!-- Active Rendering Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- UI Overlay Layer -->
+    <div id="ui-layer">
+      <!-- Challenge Banner (Shown if launched via challenge URL) -->
+      <div id="challenge-banner" class="hud-banner hidden" aria-live="polite">
+        <span class="banner-icon">⚡</span>
+        <span id="challenge-text">CHALLENGE: Beat 0</span>
+      </div>
+
+      <!-- Top In-Game HUD -->
+      <header id="hud-top" class="hud-panel">
+        <div class="hud-score-container">
+          <div class="hud-label">SCORE</div>
+          <div id="hud-score" class="hud-value">0</div>
+        </div>
+        <div class="hud-multiplier-container">
+          <div class="hud-label">MULTIPLIER</div>
+          <div id="hud-multiplier" class="hud-value neon-gold">1x</div>
+        </div>
+        <div class="hud-best-container">
+          <div class="hud-label">BEST</div>
+          <div id="hud-best" class="hud-value">0</div>
+        </div>
+      </header>
+
+      <!-- Center Start Overlay Screen -->
+      <div id="start-screen" class="overlay-screen">
+        <div class="logo-box">
+          <h1 class="game-title">ANTIGRAVITY</h1>
+          <div class="game-subtitle">NEON PULSE</div>
+        </div>
+
+        <div class="instructions-card">
+          <div class="instruction-item">
+            <span class="inst-icon">👆</span>
+            <span class="inst-text"><strong>TAP</strong> anywhere to flip gravity rails</span>
+          </div>
+          <div class="instruction-item">
+            <span class="inst-icon">↔️</span>
+            <span class="inst-text"><strong>DRAG</strong> thumb to micro-steer through hazards</span>
+          </div>
+          <div class="instruction-item">
+            <span class="inst-icon">⚡</span>
+            <span class="inst-text"><strong>NEAR MISS</strong> hazards to build combo multipliers</span>
+          </div>
+        </div>
+
+        <div class="tap-zone pulse-anim">
+          <div class="tap-prompt">TAP TO START</div>
+          <div class="tap-sub">Optimized for Galaxy S25 Ultra 120Hz</div>
+        </div>
+
+        <button id="btn-install" class="pwa-install-btn hidden" type="button">
+          📲 Install Game to Home Screen
+        </button>
+      </div>
+
+      <!-- Game Over Modal Screen -->
+      <div id="game-over-screen" class="overlay-screen hidden" aria-modal="true" role="dialog">
+        <div class="modal-card">
+          <h2 class="game-over-title">SYSTEM OFFLINE</h2>
+          <div id="new-record-badge" class="record-badge hidden">🏆 NEW BEST RECORD!</div>
+          
+          <div class="score-summary">
+            <div class="summary-row">
+              <span class="summary-label">FINAL SCORE</span>
+              <span id="game-over-score" class="summary-val neon-cyan">0</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">BEST RECORD</span>
+              <span id="game-over-best" class="summary-val">0</span>
+            </div>
+            <div id="challenge-result-row" class="summary-row hidden">
+              <span class="summary-label">CHALLENGE</span>
+              <span id="summary-challenge" class="summary-val neon-magenta">TARGET CLEARED!</span>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button id="btn-replay" class="action-btn primary-btn" type="button">
+              ⚡ PLAY AGAIN
+            </button>
+            <button id="btn-share-score" class="action-btn share-btn" type="button">
+              📲 CHALLENGE FRIENDS
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Notifications Container -->
+      <div id="toast-container" class="toast-shelf" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <!-- Service Worker Registration -->
+  <script type="module">
+    if ('serviceWorker' in navigator && (window.isSecureContext || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      window.addEventListener('load', async () => {
+        try {
+          const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+          console.log('[PWA] Service Worker registered with scope:', reg.scope);
+        } catch (err) {
+          console.warn('[PWA] Service Worker registration failed:', err);
+        }
+      });
+    }
+  </script>
+
+  <!-- Game Bootstrap -->
+  <script type="module">
+    import { GameEngine } from './src/game.js';
+    window.addEventListener('DOMContentLoaded', () => {
+      const canvas = document.getElementById('game-canvas');
+      if (canvas) {
+        const game = GameEngine.init(canvas);
+        window.__GAME_ENGINE__ = game;
+        game.start();
+      }
+    });
+  </script>
+</body>
+</html>

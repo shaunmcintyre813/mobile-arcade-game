@@ -1,0 +1,41 @@
+{
+  "id": "./?source=pwa",
+  "name": "AntiGravity: Neon Pulse",
+  "short_name": "AntiGravity",
+  "description": "Addictive, high-speed mobile arcade anti-gravity runner optimized for high-refresh touchscreens.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0a0a16",
+  "background_color": "#0a0a16",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["games", "arcade"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

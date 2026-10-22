@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0e0e24"/>
+      <stop offset="100%" stop-color="#05050a"/>
+    </linearGradient>
+
+    <!-- Rail Glow Gradients -->
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00f0ff"/>
+      <stop offset="100%" stop-color="#0066ff"/>
+    </linearGradient>
+    <linearGradient id="magentaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ff0055"/>
+      <stop offset="100%" stop-color="#9900ff"/>
+    </linearGradient>
+
+    <!-- Core Spark Radial Glow -->
+    <radialGradient id="sparkGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#00f0ff"/>
+      <stop offset="60%" stop-color="rgba(0, 240, 255, 0.4)"/>
+      <stop offset="100%" stop-color="rgba(0, 240, 255, 0)"/>
+    </radialGradient>
+    <radialGradient id="goldGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#ffe600"/>
+      <stop offset="70%" stop-color="rgba(255, 230, 0, 0.3)"/>
+      <stop offset="100%" stop-color="rgba(255, 230, 0, 0)"/>
+    </radialGradient>
+
+    <!-- Glow Filters -->
+    <filter id="neonBlur" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="512" height="512" rx="100" fill="url(#bgGrad)"/>
+
+  <!-- Outer Cyber Grid Lines (Subtle) -->
+  <g opacity="0.12" stroke="#00f0ff" stroke-width="1.5">
+    <line x1="80" y1="0" x2="80" y2="512"/>
+    <line x1="160" y1="0" x2="160" y2="512"/>
+    <line x1="256" y1="0" x2="256" y2="512"/>
+    <line x1="352" y1="0" x2="352" y2="512"/>
+    <line x1="432" y1="0" x2="432" y2="512"/>
+    <line x1="0" y1="128" x2="512" y2="128"/>
+    <line x1="0" y1="256" x2="512" y2="256"/>
+    <line x1="0" y1="384" x2="512" y2="384"/>
+  </g>
+
+  <!-- Dual Anti-Gravity Rails (80% Safe Zone compliant) -->
+  <!-- Left Cyan Rail -->
+  <g filter="url(#neonBlur)">
+    <line x1="120" y1="60" x2="120" y2="452" stroke="#00f0ff" stroke-width="8" stroke-linecap="round"/>
+    <line x1="120" y1="60" x2="120" y2="452" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Right Magenta Rail -->
+  <g filter="url(#neonBlur)">
+    <line x1="392" y1="60" x2="392" y2="452" stroke="#ff0055" stroke-width="8" stroke-linecap="round"/>
+    <line x1="392" y1="60" x2="392" y2="452" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <!-- Gravity Inversion Trajectory Beam -->
+  <path d="M 120 360 Q 256 256 392 152" fill="none" stroke="#ffe600" stroke-width="4" stroke-dasharray="12 8" opacity="0.8" filter="url(#neonBlur)"/>
+
+  <!-- Energy Pulse Rings Around Center -->
+  <circle cx="256" cy="256" r="110" fill="none" stroke="#00f0ff" stroke-width="2" opacity="0.25"/>
+  <circle cx="256" cy="256" r="75" fill="none" stroke="#ff0055" stroke-width="2.5" opacity="0.4"/>
+  <circle cx="256" cy="256" r="140" fill="url(#sparkGlow)" opacity="0.6"/>
+
+  <!-- Central Anti-Gravity Spark (Diamond Core) -->
+  <g filter="url(#neonBlur)">
+    <!-- Outer Glow Diamond -->
+    <polygon points="256,160 326,256 256,352 186,256" fill="#00f0ff" opacity="0.5"/>
+    <!-- Mid Core Diamond -->
+    <polygon points="256,180 310,256 256,332 202,256" fill="url(#goldGlow)"/>
+    <!-- Intense White Core -->
+    <polygon points="256,206 290,256 256,306 222,256" fill="#ffffff"/>
+  </g>
+
+  <!-- Speed Energy Sparks -->
+  <circle cx="210" cy="190" r="4" fill="#00f0ff" filter="url(#neonBlur)"/>
+  <circle cx="310" cy="320" r="5" fill="#ff0055" filter="url(#neonBlur)"/>
+  <circle cx="290" cy="180" r="3" fill="#ffe600" filter="url(#neonBlur)"/>
+  <circle cx="190" cy="310" r="4.5" fill="#00f0ff" filter="url(#neonBlur)"/>
+</svg>
