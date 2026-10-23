@@ -9,6 +9,7 @@ const repoRoot = path.resolve(__dirname, '..');
 
 export const TRACKED_FILES = [
   'index.html',
+  'favicon.ico',
   'style.css',
   'manifest.webmanifest',
   'src/audio.js',

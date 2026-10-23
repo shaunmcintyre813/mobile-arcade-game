@@ -17,6 +17,10 @@ export class TouchController {
 
     this.target = targetElement;
     this.display = displayManager;
+    this.disambiguateTapDrag = Boolean(callbacks.disambiguateTapDrag);
+    this.tapThreshold = Number.isFinite(callbacks.tapThreshold) ? callbacks.tapThreshold : 10;
+    this.tapMaxDuration = Number.isFinite(callbacks.tapMaxDuration) ? callbacks.tapMaxDuration : 350;
+
     this.callbacks = {
       onTap: typeof callbacks.onTap === 'function' ? callbacks.onTap : null,
       onDrag: typeof callbacks.onDrag === 'function' ? callbacks.onDrag : null,
@@ -29,12 +33,14 @@ export class TouchController {
     this.touchId = null;
     this.touchStartX = 0;
     this.touchStartY = 0;
+    this.touchStartTime = 0;
     this.currentVirtualX = 200;
     this.currentVirtualY = 400;
     this.dragDeltaX = 0;
     this.dragDeltaY = 0;
     this.tapTriggered = false;
     this.hasMoved = false;
+    this.isDragging = false;
 
     // Listener references for removal
     this._listeners = [];
@@ -141,6 +147,8 @@ export class TouchController {
     this.touchId = touch.identifier;
     this.touchActive = true;
     this.hasMoved = false;
+    this.isDragging = false;
+    this.touchStartTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
     const coords = this.toVirtualCoords(touch.clientX, touch.clientY);
     this.touchStartX = coords.x;
@@ -149,11 +157,15 @@ export class TouchController {
     this.currentVirtualY = coords.y;
     this.dragDeltaX = 0;
     this.dragDeltaY = 0;
-    this.tapTriggered = true;
 
-    // Immediately notify onTap for zero-latency gravity inversion on touch contact
-    if (this.callbacks.onTap) {
-      this.callbacks.onTap(coords);
+    if (!this.disambiguateTapDrag) {
+      // Legacy behavior: Immediately notify onTap for zero-latency gravity inversion on touch contact
+      this.tapTriggered = true;
+      if (this.callbacks.onTap) {
+        this.callbacks.onTap(coords);
+      }
+    } else {
+      this.tapTriggered = false;
     }
   }
 
@@ -177,6 +189,15 @@ export class TouchController {
         this.currentVirtualY = coords.y;
         this.hasMoved = true;
 
+        if (this.disambiguateTapDrag) {
+          const totalDist = Math.hypot(coords.x - this.touchStartX, coords.y - this.touchStartY);
+          if (totalDist > this.tapThreshold) {
+            this.isDragging = true;
+          }
+        } else {
+          this.isDragging = true;
+        }
+
         if (this.callbacks.onDrag) {
           this.callbacks.onDrag(coords, { x: deltaX, y: deltaY });
         }
@@ -198,6 +219,19 @@ export class TouchController {
     for (let i = 0; i < e.changedTouches.length; i++) {
       const touch = e.changedTouches[i];
       if (touch.identifier === this.touchId) {
+        if (this.disambiguateTapDrag) {
+          const coords = this.toVirtualCoords(touch.clientX, touch.clientY);
+          const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - this.touchStartTime;
+          const totalDist = Math.hypot(coords.x - this.touchStartX, coords.y - this.touchStartY);
+
+          // If touch was quick and did not move beyond tap threshold, it is a deliberate TAP!
+          if (!this.isDragging && totalDist <= this.tapThreshold && duration <= this.tapMaxDuration) {
+            this.tapTriggered = true;
+            if (this.callbacks.onTap) {
+              this.callbacks.onTap(coords);
+            }
+          }
+        }
         this.clearTouch();
         break;
       }
@@ -216,6 +250,8 @@ export class TouchController {
     this.touchId = 'mouse';
     this.touchActive = true;
     this.hasMoved = false;
+    this.isDragging = false;
+    this.touchStartTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
     const coords = this.toVirtualCoords(e.clientX, e.clientY);
     this.touchStartX = coords.x;
@@ -224,10 +260,14 @@ export class TouchController {
     this.currentVirtualY = coords.y;
     this.dragDeltaX = 0;
     this.dragDeltaY = 0;
-    this.tapTriggered = true;
 
-    if (this.callbacks.onTap) {
-      this.callbacks.onTap(coords);
+    if (!this.disambiguateTapDrag) {
+      this.tapTriggered = true;
+      if (this.callbacks.onTap) {
+        this.callbacks.onTap(coords);
+      }
+    } else {
+      this.tapTriggered = false;
     }
   }
 
@@ -242,18 +282,40 @@ export class TouchController {
     this.currentVirtualY = coords.y;
     this.hasMoved = true;
 
+    if (this.disambiguateTapDrag) {
+      const totalDist = Math.hypot(coords.x - this.touchStartX, coords.y - this.touchStartY);
+      if (totalDist > this.tapThreshold) {
+        this.isDragging = true;
+      }
+    } else {
+      this.isDragging = true;
+    }
+
     if (this.callbacks.onDrag) {
       this.callbacks.onDrag(coords, { x: deltaX, y: deltaY });
     }
   }
 
   handlePointerUp(e) {
+    if (this.disambiguateTapDrag) {
+      const coords = this.toVirtualCoords(e.clientX, e.clientY);
+      const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - this.touchStartTime;
+      const totalDist = Math.hypot(coords.x - this.touchStartX, coords.y - this.touchStartY);
+
+      if (!this.isDragging && totalDist <= this.tapThreshold && duration <= this.tapMaxDuration) {
+        this.tapTriggered = true;
+        if (this.callbacks.onTap) {
+          this.callbacks.onTap(coords);
+        }
+      }
+    }
     this.clearTouch();
   }
 
   clearTouch() {
     this.touchActive = false;
     this.touchId = null;
+    this.isDragging = false;
     this.dragDeltaX = 0;
     this.dragDeltaY = 0;
 

@@ -17,6 +17,11 @@ export class UIManager {
     this.targetCrushed = false;
     this._fanfarePlayed = false;
 
+    // Value cache to avoid layout thrashing and redundant DOM mutations on 120Hz ticks
+    this._lastScore = null;
+    this._lastMultiplier = null;
+    this._lastBest = null;
+
     // DOM references
     this.hudScore = null;
     this.hudMultiplier = null;
@@ -133,20 +138,24 @@ export class UIManager {
 
   /**
    * Updates real-time gameplay HUD elements.
+   * Throttles DOM text writes strictly on value change to eradicate 120Hz thrashing.
    * @param {Object} state
    * @param {number} state.score
    * @param {number} state.multiplier
    * @param {number} state.best
    */
   updateHUD({ score = 0, multiplier = 1, best = 0 } = {}) {
-    if (this.hudScore) {
+    if (this.hudScore && this._lastScore !== score) {
       this.hudScore.textContent = String(score);
+      this._lastScore = score;
     }
-    if (this.hudMultiplier) {
+    if (this.hudMultiplier && this._lastMultiplier !== multiplier) {
       this.hudMultiplier.textContent = `${multiplier}x`;
+      this._lastMultiplier = multiplier;
     }
-    if (this.hudBest) {
+    if (this.hudBest && this._lastBest !== best) {
       this.hudBest.textContent = String(best);
+      this._lastBest = best;
     }
   }
 
@@ -179,7 +188,7 @@ export class UIManager {
     }
 
     if (this.challengeResultRow) {
-      if (isChallengeBeaten || this.targetCrushed) {
+      if (isChallengeBeaten) {
         this.challengeResultRow.classList.remove('hidden');
         if (this.summaryChallenge) {
           this.summaryChallenge.textContent = 'TARGET CRUSHED!';
@@ -202,6 +211,18 @@ export class UIManager {
       this.gameOverScreen.classList.add('hidden');
     }
     this._fanfarePlayed = false;
+  }
+
+  /**
+   * Resets UI manager state between game rounds.
+   */
+  reset() {
+    this._lastScore = null;
+    this._lastMultiplier = null;
+    this._lastBest = null;
+    if (this.challengeResultRow) {
+      this.challengeResultRow.classList.add('hidden');
+    }
   }
 
   /**

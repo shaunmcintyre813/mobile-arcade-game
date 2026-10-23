@@ -4,13 +4,14 @@
                  Immediate Activation & 100% Offline Resilience
    ========================================================================== */
 
-const CACHE_VERSION = 'v1.0.2';
+const CACHE_VERSION = 'v1.1.1';
 const CACHE_NAME = `antigravity-neon-pulse-${CACHE_VERSION}`;
 
 // Pre-cached core application shell assets
 const PRECACHE_ASSETS = [
   './',
   './index.html',
+  './favicon.ico',
   './style.css',
   './manifest.webmanifest',
   './src/game.js',

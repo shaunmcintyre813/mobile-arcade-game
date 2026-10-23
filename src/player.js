@@ -185,6 +185,20 @@ export class Player {
   }
 
   /**
+   * Dynamically adjusts player vertical anchor coordinate (e.g. on viewport resize).
+   * @param {number} y
+   */
+  setAnchorY(y) {
+    if (Number.isFinite(y)) {
+      this.initialY = y;
+      this.y = y;
+      for (let i = 0; i < this.trailLength; i++) {
+        this.trail[i].y = y;
+      }
+    }
+  }
+
+  /**
    * Multi-pass neon render of player ship and trailing wake.
    * @param {CanvasRenderingContext2D} ctx
    */

@@ -18,6 +18,7 @@
 
   <!-- Manifest & Icons -->
   <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="icon" type="image/svg+xml" href="./icons/icon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
@@ -73,7 +74,7 @@
           </div>
           <div class="instruction-item">
             <span class="inst-icon">⚡</span>
-            <span class="inst-text"><strong>NEAR MISS</strong> hazards to build combo multipliers</span>
+            <span class="inst-text"><strong>NEAR MISS</strong> hazards to jumpstart multiplier (2x: +100 pts)</span>
           </div>
         </div>
 
@@ -124,7 +125,7 @@
     </div>
   </div>
 
-  <!-- Service Worker Registration -->
+  <!-- Service Worker Registration & Seamless Auto-Update -->
   <script type="module">
     if (window.location.hostname !== 'appassets.androidplatform.net' &&
         'serviceWorker' in navigator &&
@@ -133,6 +134,28 @@
         try {
           const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
           console.log('[PWA] Service Worker registered with scope:', reg.scope);
+
+          // Listen for new service worker claiming clients (instant seamless OTA activation)
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            // Round protection: never reload while player is active mid-round
+            const game = window.__GAME_ENGINE__;
+            if (!game || game.state !== 'PLAYING') {
+              refreshing = true;
+              window.location.reload();
+            }
+          });
+
+          // Check for service worker updates periodically and on tab focus
+          if (reg) {
+            reg.update().catch(() => {});
+            document.addEventListener('visibilitychange', () => {
+              if (document.visibilityState === 'visible') {
+                reg.update().catch(() => {});
+              }
+            });
+          }
         } catch (err) {
           console.warn('[PWA] Service Worker registration failed:', err);
         }
@@ -146,7 +169,7 @@
     window.addEventListener('DOMContentLoaded', () => {
       const canvas = document.getElementById('game-canvas');
       if (canvas) {
-        const game = GameEngine.init(canvas);
+        const game = GameEngine.init(canvas, { disambiguateTapDrag: true });
         window.__GAME_ENGINE__ = game;
         game.start();
       }

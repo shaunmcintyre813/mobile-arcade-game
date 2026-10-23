@@ -19,6 +19,26 @@ export const STATE_START = 'START';
 export const STATE_PLAYING = 'PLAYING';
 export const STATE_GAME_OVER = 'GAME_OVER';
 
+/**
+ * Calculates adaptive player vertical anchor coordinate based on viewport virtual height.
+ * Guarantees player remains comfortably on-screen across desktop, tablet, and mobile orientations.
+ * @param {number} virtualHeight
+ * @returns {number}
+ */
+export function computePlayerY(virtualHeight) {
+  if (!Number.isFinite(virtualHeight) || virtualHeight <= 0) return 650;
+  // On standard portrait viewports (virtualHeight >= 888), preserve canonical anchor 650
+  if (virtualHeight >= 888) {
+    return Math.min(650, virtualHeight - 238);
+  }
+  // On shorter / wider viewports (e.g. tablet portrait ~533, desktop ~250),
+  // dynamically anchor player in lower third (~72%) while ensuring safety margin from bounds
+  const target = Math.round(virtualHeight * 0.72);
+  const maxAllowed = virtualHeight - 40;
+  const minAllowed = 50;
+  return Math.max(minAllowed, Math.min(target, maxAllowed));
+}
+
 export class GameEngine {
   /**
    * @param {HTMLCanvasElement} [canvas=null] - Target HTML canvas element
@@ -44,6 +64,13 @@ export class GameEngine {
     this.obstacles = options.obstacleManager || new ObstacleManager();
     this.particles = options.particleSystem || new ParticleSystem();
 
+    // Adapt player vertical anchor to initial viewport bounds & listen for resizes
+    if (this.display) {
+      const bounds = this.display.getVirtualBounds();
+      this._syncPlayerViewport(bounds.height);
+      this.display.onResize((b) => this._syncPlayerViewport(b.height));
+    }
+
     // State & Persistence subsystems
     this.storage = options.storageController || new StorageController();
     this.scoreManager = options.scoreManager || new ScoreManager({ storageController: this.storage });
@@ -59,6 +86,7 @@ export class GameEngine {
     this.touch = options.touchController || null;
     if (!this.touch && this.canvas) {
       this.touch = new TouchController(this.canvas, this.display, {
+        disambiguateTapDrag: Boolean(options.disambiguateTapDrag),
         onTap: (coords) => this.handleTap(coords),
         onDrag: (coords, delta) => this.handleDrag(coords, delta)
       });
@@ -214,10 +242,34 @@ export class GameEngine {
     this.scoreManager.reset();
     this._challengeCelebrated = false;
     this.totalTime = 0;
-    this.player.reset();
+    const bounds = this.display ? this.display.getVirtualBounds() : { height: 888 };
+    const anchorY = computePlayerY(bounds.height);
+    this.player.reset(anchorY);
     this.obstacles.reset();
     this.particles.reset();
+    if (this.ui) {
+      if (typeof this.ui.reset === 'function') {
+        this.ui.reset();
+      }
+    }
     this.updateHUD();
+  }
+
+  /**
+   * Synchronizes player vertical anchor position with virtual viewport geometry.
+   * @param {number} virtualHeight
+   * @private
+   */
+  _syncPlayerViewport(virtualHeight) {
+    const anchorY = computePlayerY(virtualHeight);
+    if (this.player) {
+      if (typeof this.player.setAnchorY === 'function') {
+        this.player.setAnchorY(anchorY);
+      } else {
+        this.player.initialY = anchorY;
+        this.player.y = anchorY;
+      }
+    }
   }
 
   /**

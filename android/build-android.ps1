@@ -1,8 +1,8 @@
 param(
     [string] $SdkRoot = "$env:USERPROFILE\AppData\Local\Android\Sdk",
     [string] $JavaRoot = 'C:\Program Files\Android\Android Studio\jbr',
-    [string] $Version = '1.1.0',
-    [int] $VersionCode = 2
+    [string] $Version = '1.1.1',
+    [int] $VersionCode = 3
 )
 
 $ErrorActionPreference = 'Stop'
